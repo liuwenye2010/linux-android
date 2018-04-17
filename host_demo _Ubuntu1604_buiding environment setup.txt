@@ -250,9 +250,25 @@ vim /etc/ssh/sshd_config
 重启ssh服务
 service ssh restart  
 
-然后
+然后 ssh 与winscp就可以以root用户登入，然后winscp下就有权限从windows目录先ubuntu目录来上传文件夹了(root权限的capefw)
 
 
+
+#备份到github 
+使用git gui commit ,push ,如果是命令行也可以 
+git push  
+git push -u origin master 
+
+
+
+###  
+使用winscp 上传jni文件夹到ubuntu
+使用putty ssh方式root身份登入到ubuntu 
+cd /home/johl/capefw/trunk/host/demo/i2c_flash/jni
+NDK=/home/johl/toolchains/android-ndk-r14b
+export NDK 
+echo $NDK 
+$NDK/ndk-build
 
 
 
