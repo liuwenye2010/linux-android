@@ -1,0 +1,119 @@
+(1) 安jdk-8u91-windows-x64.exe 
+(2) 安装android studio3 到 D 盘！！ 
+(3) 设置环境变量： JAVA_HOME 到系统变量 执行JDK文件夹 C:\Program Files\Java\jdk1.8.0_91
+    配置CLASSPATH     .;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar; 
+	配置Path        %JAVA_HOME%\bin; %JAVA_HOME%\jre\bin 
+	配置之后cmd下输入java 有输出； 输入javac 有输出； 输入 java -version 确认版本号是1.8.0_91 
+	
+	
+(4) SDK更新/或者选择离线的SDK，用洪东的SDK文件
+
+
+(5)
+
+
+
+
+##chunyu suggestion  
+
+##usb upgrade  example  
+
+
+
+
+#使用NDK-R14B 编译出错 
+NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r14b
+export NDK 
+echo $NDK 
+
+cd  /cygdrive/c/cygwin/home/johl/exprj/CxAudioHidLib-EMBCB/android/jni
+
+$NDK/ndk-build.cmd 
+
+
+### 使用NDK-R12B 编译OK 
+NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
+export NDK 
+echo $NDK 
+
+cd  /cygdrive/c/cygwin/home/johl/exprj/CxAudioHidLib-EMBCB/android/jni
+
+$NDK/ndk-build.cmd
+
+
+
+
+#build i2c as a lib used by  android  
+
+cd  /home/johl/capefw/trunk/host/demo/i2c_flash/jni
+NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
+export NDK 
+echo $NDK 
+
+
+$NDK/ndk-build.cmd   
+
+
+#if you had set the env  NDK_ROOT , you can  also 
+$NDK_ROOT/ndk-build.cmd
+
+
+##usb_upgrade
+
+
+cd  capefw/trunk/host/demo/usb_upgrade/jni
+NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
+export NDK 
+echo $NDK 
+$NDK/ndk-build.cmd
+
+
+##host_demo 
+
+
+cd  capefw/trunk/host/demo/generic/jni
+NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
+export NDK 
+echo $NDK 
+$NDK/ndk-build.cmd
+
+
+
+
+###配置手机nexus 5 无线调试， 选择共享
+
+
+1. netsh wlan set hostednetwork mode=allow ssid=realtek key=123456789
+ 
+2. netsh wlan start hostednetwork
+ 
+3.adb tcpip 5556
+ 
+4.adb connect 192.168.137.196:5556
+
+
+#使用电脑端的KingRootSetup_3.4.0.1142.exe （安装后）破解测试手机testphone 05  android 6.01 获得root权限
+
+
+#写一个范例helloworld 在 C:\cygwin\home\johl\exprj\prj_ndk\hello      （注意需要添加pie支持 LOCAL_CFLAGS += -pie -fPIE   LOCAL_LDFLAGS += -pie -fPIE ）
+cygwin 下
+cd /home/johl/exprj/prj_ndk/hello/jni
+$NDK_ROOT/ndk-build.cmd
+
+copy  C:\cygwin\home\johl\exprj\prj_ndk\hello\libs\armeabi-v7a  目录下hello 到桌名
+
+桌面执行windows  cmd   （默认放在/data/local/tmp/下， 如果放在/sdcard/johl/下是否无法执行,无法修改chmod）
+adb push  ./hello    /data/local/tmp/     
+adb shell  
+su root 
+cd /data/local/tmp/
+chmod 777 hello  
+./hello  
+#如果能够正确执行，则可以显示
+
+
+
+##push 
+
+
+

@@ -1,0 +1,260 @@
+(1)install vim 
+sudo apt-get install vim 
+
+#配置虚拟机使用桥接模式接入网络 Virtualbox_Ubuntu16_Network_config 1 lwy.jpg    & Virtualbox_Ubuntu16_Network_config 2 lwy.jpg
+ifconfig 有ip地址分配 
+
+
+(1)' install tree 
+sudo apt-get install tree 
+
+(2)install ssh for winscp & putty 
+
+sudo apt-get install openssh-server 
+sudo apt-get install openssh-client
+
+#using winscp connect ubuntu and create a folder and upload associated files to the ubuntu (/home/johl/toolchains/) 
+
+
+
+
+(3)install svn and checkout the trunk code  
+sudo apt-get install subversion 
+svn --version    #svn version 1.9.3 (r1713519) 
+sudo svn checkout  http://nbsvn01.conexant.com/svn/audiofw_dsp/capefw/trunk  /home/johl/capfw/trunk     
+(your ubuntu password, and your svn(unix) password 
+
+(3)setup the buidling environment and buidl it 
+
+# Generate standalone toolchain from NDK for android_armv7-a 
+cd /home/johl/toolchanis/android-ndk-r14b/build/tools
+./make-standalone-toolchain.sh --platform=android-24 --toolchain=arm-linux-androideabi-4.9 --install-dir=/home/johl/hdc_toolchains/arm-linux-androideabi-4.9 --verbose
+
+# (如果需要支持64位v8的话） Generate standalone toolchain from NDK for android64_armv8-a
+cd /home/johl/toolchains/android-ndk-r14b/build/tools
+./make-standalone-toolchain.sh --platform=android-24 --toolchain=aarch64-linux-androideabi-4.9 --install-dir=/home/johl/hdc_toolchains/aarch64-linux-androideabi-4.9 --verbose
+
+(4)解压对应的toolchains 到hdc_toolchains目录下 
+cd  /home/johl/hdc_toolchains/
+sudo tar xvJf  /home/johl/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf.tar.xz  
+sudo tar xvJf  /home/johl/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz
+sudo tar xvJf  /home/johl/toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz
+
+
+
+(5)setup softlink to  /tmp/ 
+ln -s /home/johl/hdc_toolchains/ /tmp/
+
+
+
+(5)test your toolchains 
+cd /home/test/    # one example code  helloworld.c 
+#1  (linux_armv7-a) 
+#  /home/johl/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-g++ helloworld.c -o helloworld
+/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-g++ helloworld.c -o helloworld_arm_gnueabi 
+file helloworld_arm_gnueabi 
+#2  (linux_rpi） 
+/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ helloworld.c -o helloworld_arm_gnueabihf 
+file helloworld_arm_gnueabihf 
+#3   （linux64_armv8-a）
+/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++ helloworld.c -o helloworld_aarch64 
+file helloworld_aarch64 
+#4   （android_armv7-a）
+/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-g++ helloworld.c -o helloworld_arm_androideabi 
+file  helloworld_arm_androideabi 
+#5   （android64_armv8-a）
+/tmp/hdc_toolchains/aarch64-linux-androideabi-4.9/bin/aarch64-linux-android-g++ helloworld.c -o helloworld_arm_aarch64_android
+file  helloworld_arm_aarch64_android
+
+
+
+
+
+
+
+(6) compile the lib using our toolchian , below using linux_armv7-a  as example, using gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi
+#generate the libi2c_flash.bin 
+cd ~/capefw/trunk/host/demo/i2c_flash/libi2c_flash/
+sudo make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-
+ls custom/  
+
+#generate the libusb
+cd ~/capefw/trunk/host/demo/usb_upgrade/libusb_upgrade/
+sudo make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-
+ls custom/  
+
+
+
+
+
+
+
+
+
+
+
+(6)install git and clone the libusb 
+sudo apt-get instal git  
+git --version #git version 2.7.4 
+cd  /home/johl/works 
+git clone   https://github.com/libusb/libusb.git    
+tree -L 1 ./libusb 
+
+# retrieve development branch (this only needs to be done once)
+git clone git://github.com/libusb/libusb.git
+cd libusb
+
+# for further updates, once the clone has been done
+git pull
+
+You can also browse the git development tree from https://github.com/libusb/libusb. 
+
+When compiling from git, remember that you may have to run ./autogen.sh, ./bootstrap.sh or run the autotools creation utilities, in order to have configure and Makefile created for you. The difference between autogen.sh and bootstrap.sh is that the former will invoke configure with a set of default options, whereas the latter will not. 
+
+To create projects relying on libusb, please refer to the samples in the examples/ subdirectory. 
+
+
+
+(7)make the libusb lib for specific platform 
+cd /home/johl/works/libusb 
+
+#install autoreconf 
+sudo apt-get install dh-autoreconf 
+
+#install lib dev 
+sudo apt-get install libudev-dev
+
+#./autogen.sh
+
+./autogen.sh
+
+#configurate
+ 
+
+#make 
+make 
+
+#libusb/.libs/ will find  libusb-1.0.a and  libusb-1.0.so.0.1.0
+
+
+#1,variant for the linux_armv7-a 
+sudo make clean
+./configure CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
+sudo make CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc
+
+ll  libusb/.libs/   # you will find the libusb-1.0.so  etc .. 
+
+sudo make install   #install the lib & include file to specific folder 
+ll  /home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
+
+
+#2 linux_rpi
+sudo make clean
+./configure CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/linux_rpi
+sudo make CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
+sudo make install   #install the lib & include file to specific folder 
+ll  /home/johl/capefw/trunk/host/interface/libusb/linux_rpi
+
+#3 linux64_armv8-a
+sudo make clean
+./configure CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/linux64_armv8-a
+sudo make CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc
+sudo make install
+ll  /home/johl/capefw/trunk/host/interface/libusb/linux64_armv8-a
+
+
+#4 android_armv7-a
+sudo make clean
+./configure CC=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/android_armv7-a
+sudo make CC=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc
+sudo make install
+ll /home/johl/capefw/trunk/host/interface/libusb/android_armv7-a
+
+#5 android64_armv8-a
+sudo make clean
+./configure CC=/tmp/hdc_toolchains/aarch64-linux-androideabi-4.9/bin/aarch64-linux-android-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/android64_armv8-a
+sudo make CC=/tmp/hdc_toolchains/aarch64-linux-androideabi-4.9/bin/aarch64-linux-android-gcc
+sudo make install
+ll /home/johl/capefw/trunk/host/interface/libusb/android64_armv8-a
+
+
+###build tools like  libusb_upgrade , i2c_flash ,
+
+cd /home/johl/capefw/trunk/host/etc 
+# ./make.sh libusb_upgrade
+sudo bash make.sh libusb_upgrade 
+# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################
+set up environment on cygwin  
+
+cd /tmp/hdc_toolchains/
+tar xvJf  gcc-linaro-4.9.4-2017.01-i686-mingw32_aarch64-linux-gnu.tar.xz
+tar xvJf  gcc-linaro-4.9.4-2017.01-i686-mingw32_arm-linux-gnueabi.tar.xz
+tar xvJf  gcc-linaro-4.9.4-2017.01-i686-mingw32_arm-linux-gnueabihf.tar.xz
+
+#install python for cygwin 
+first enter into the cygwin cmd terminal 
+
+#android_armv7-a
+cd /tmp/hdc_toolchains/android-ndk-r14b/build/tools
+##./make-standalone-toolchain.sh --platform=android-24 --toolchain=arm-linux-androideabi-4.9 --install-dir=/cygdrive/c/cygwin/tmp/hdc_toolchains/arm-linux-androideabi-4.9 --verbose
+./make-standalone-toolchain.sh --platform=android-24 --toolchain=arm-linux-androideabi-4.9 --install-dir=/cygwin/tmp/hdc_toolchains/arm-linux-androideabi-4.9 --verbose
+
+#android64_armv8-a
+cd /tmp/hdc_toolchains/android-ndk-r14b/build/tools
+##./make-standalone-toolchain.sh --platform=android-24 --toolchain=aarch64-linux-androideabi-4.9 --install-dir=/cygdrive/c/cygwin/tmp/hdc_toolchains/aarch64-linux-androideabi-4.9 --verbose
+./make-standalone-toolchain.sh --platform=android-24 --toolchain=aarch64-linux-androideabi-4.9 --install-dir=/cygwin/tmp/hdc_toolchains/aarch64-linux-androideabi-4.9 --verbose
+
+
+
+##ubuntu 添加root 密码，同时添加以root用户登入。 https://blog.csdn.net/sunxiaoju/article/details/51993091
+https://www.linuxidc.com/Linux/2017-01/139094.htm
+
+add（1）  首次root 用户没有默认密码， 可以配置默认密码： sudo passwd root  为root用户配置密码， 以后用root用户登入，可以避免很多权限问题（比如capefw是root权限）   
+
+
+sudo vi /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
+添加 greeter-show-manual-login=true  保存 
+
+sudo passwd root   # 123 
+
+sudo vi /root/.profile
+
+找到 mesg n  || true  替换为 tty -s && mesg n || true  保存
+
+reboot 
+
+switch user ---> login --> root   # open terminal  就是root 打头
+
+如果这个时候用putty ssh 或者是 winscp登入 遇到密码依旧会deny access ,接下来需要修改ssh配置。 如下 
+
+我们需要的是以root的方式ssh登入，这样winscp可以更改所有的文件
+参考： https://blog.csdn.net/ouchao0727/article/details/50202541
+vim /etc/ssh/sshd_config  
+将 #PermitRootLogin without-password 或者是PermitRootLogin prohibit-password 改为 PermitRootLogin yes  
+重启ssh服务
+service ssh restart  
+
+然后
+
+
+
+
+
+
+
