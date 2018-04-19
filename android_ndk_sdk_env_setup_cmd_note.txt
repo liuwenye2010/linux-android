@@ -67,6 +67,8 @@ export NDK
 echo $NDK 
 $NDK/ndk-build.cmd
 
+NDK=/cygdrive/d/Android/Ndk/android-ndk-r16b
+
 
 ##host_demo 
 
@@ -80,6 +82,9 @@ $NDK/ndk-build.cmd
 
 
 
+
+
+
 ###配置手机nexus 5 无线调试， 选择共享
 
 
@@ -88,9 +93,19 @@ $NDK/ndk-build.cmd
 2. netsh wlan start hostednetwork
  
 3.adb tcpip 5556
- 
-4.adb connect 192.168.137.196:5556
 
+#adb devices  
+#adb shell ifconfig  //查看手机无线ip ｗｌａｎ０　ｉｐ地址　（手机要打开ｗｉｆｉ脸上ｒｅａｌｔｅｋ）
+ 
+4.adb connect 192.168.137.196:5556　　//根据实际ip地址adb 连上手机，提示connect之后，就可以独立USB线了。
+
+5.adb shell ifconfig  //拔掉usb线后看看
+
+6.adb shell  //进入shell 
+
+7.su root  //切换为root 
+
+8. cd /data/local/tmp    //程序放在这里执行 chmod 777  hello    --> ./hello 
 
 #使用电脑端的KingRootSetup_3.4.0.1142.exe （安装后）破解测试手机testphone 05  android 6.01 获得root权限
 
@@ -113,7 +128,16 @@ chmod 777 hello
 
 
 
-##
+##libusb 在window cygwin 下 通过NDK 来编译 ，先从github clone 到以下文件夹 , 使用doxygen　生成文档API (官网也有） 
+cygwin 下 
+cd /home/johl/exprj/prj_libusb/libusb/android/jni
+export   NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
+$NDK/ndk-build.cmd    #全部架构的so库编译以及一些testcase
+
+
+
+
+
 
 
 

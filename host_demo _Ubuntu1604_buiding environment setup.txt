@@ -78,7 +78,7 @@ cd ~/capefw/trunk/host/demo/i2c_flash/libi2c_flash/
 sudo make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-
 ls custom/  
 
-#generate the libusb
+#generate the libusb_upgrade for specific 
 cd ~/capefw/trunk/host/demo/usb_upgrade/libusb_upgrade/
 sudo make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-
 ls custom/  
@@ -86,11 +86,17 @@ ls custom/
 
 
 
+#generate the libusb_upgrade for android v7 
+cd ~/capefw/trunk/host/demo/usb_upgrade/libusb_upgrade/
+ln -s /home/johl/hdc_toolchains/ /tmp/										
+ make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
+ls custom/  
 
-
-
-
-
+#generate the libusb_upgrade for android v8 
+cd ~/capefw/trunk/host/demo/usb_upgrade/libusb_upgrade/
+ln -s /home/johl/hdc_toolchains/ /tmp/										
+ make VARIANT=custom  _  CROSS_COMPILE=/tmp/hdc_toolchains/aarch64-linux-androideabi-4.9/bin/aarch64-linux-android-  
+ls custom 
 
 
 (6)install git and clone the libusb 
@@ -138,14 +144,25 @@ make
 
 
 #1,variant for the linux_armv7-a 
-sudo make clean
-./configure CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
-sudo make CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc
+make clean
+./configure CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc --host=arm-linux --enable-udev=no   --prefix=/home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
+make CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc
 
-ll  libusb/.libs/   # you will find the libusb-1.0.so  etc .. 
-
-sudo make install   #install the lib & include file to specific folder 
+ll  libusb/.libs/   # you will find the libusb-1.0.so  etc ..  
+make install   #install the lib & include file to specific folder 
 ll  /home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
+
+
+#1,variant for the linux_armv7-a 
+make clean
+./configure CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-clang --host=arm-linux --enable-udev=no   --prefix=/home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
+make CFLAGS+=-fPIC    CC=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-clang
+#CFLAGS+=-fPIC   LDFLAGS+=-lrt CFLAGS+=-D__ANDROID_API__=$API   CFLAGS+=-pie
+ll  libusb/.libs/   # you will find the libusb-1.0.so  etc ..  
+make install   #install the lib & include file to specific folder 
+ll  /home/johl/capefw/trunk/host/interface/libusb/linux_armv7-a
+
+
 
 
 #2 linux_rpi
@@ -164,10 +181,11 @@ ll  /home/johl/capefw/trunk/host/interface/libusb/linux64_armv8-a
 
 
 #4 android_armv7-a
-sudo make clean
-./configure CC=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc --host=arm-linux --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/android_armv7-a
-sudo make CC=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc
-sudo make install
+make clean
+./configure CC=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-clang --host=arm-eabi --enable-udev=no --prefix=/home/johl/capefw/trunk/host/interface/libusb/android_armv7-a
+make   CFLAGS+=-fPIC  CFLAGS+=-lrt  CC=/tmp/hdc_toolchains/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-clang
+#CFLAGS+=-fPIC   LDFLAGS+=-lrt CFLAGS+=-D__ANDROID_API__=$API   CFLAGS+=-pie
+make install
 ll /home/johl/capefw/trunk/host/interface/libusb/android_armv7-a
 
 #5 android64_armv8-a
@@ -265,10 +283,31 @@ git push -u origin master
 使用winscp 上传jni文件夹到ubuntu
 使用putty ssh方式root身份登入到ubuntu 
 cd /home/johl/capefw/trunk/host/demo/i2c_flash/jni
-NDK=/home/johl/toolchains/android-ndk-r14b
+NDK=/home/johl/toolchains/android-ndk-r14b 
+# NDK=/home/johl/toolchains/android-ndk-r12b 
 export NDK 
 echo $NDK 
 $NDK/ndk-build
+
+
+##修改ubuntu 系统环境变量 (root身份）
+
+gedit  /etc/profile  
+
+#在末尾添加
+ln -s /home/johl/hdc_toolchains/ /tmp/
+
+export NDK=/home/johl/toolchains/android-ndk-r12b
+
+#export PATH="$PATH:/home/johl/toolchains/android-ndk-r12b"
+
+##ubuntu下使用ndk编译libusb  （root 身份）
+cd /home/johl/works/libusb/android/jni
+$NDK/ndk-build    # 所有架构处理的libusb 以及test example 编译（）
+
+
+
+ 
 
 
 
