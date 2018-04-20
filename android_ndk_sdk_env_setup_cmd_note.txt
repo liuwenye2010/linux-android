@@ -43,19 +43,46 @@ $NDK/ndk-build.cmd
 
 
 
-#build i2c as a lib used by  android  
+#build i2c as a exec used by  android  
 
 cd  /home/johl/capefw/trunk/host/demo/i2c_flash/jni
 NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
 export NDK 
 echo $NDK 
-
-
 $NDK/ndk-build.cmd   
 
+#adb 验证, windows cmd 
+
+adb devices 
+adb push ./i2c_flash  /data/local/tmp
+adb shell 
+su root 
+cd /data/local/tmp 
+chmod 777 i2c_flash 
+./i2c_flash  -h ##提示信息 /dev/i2c-1 不存在（手机）
 
 #if you had set the env  NDK_ROOT , you can  also 
 $NDK_ROOT/ndk-build.cmd
+
+
+
+##host_demo 
+
+cd  capefw/trunk/host/demo/generic/jni
+NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
+export NDK 
+echo $NDK 
+$NDK/ndk-build.cmd
+
+#adb 验证, windows cmd 
+
+adb devices 
+adb push ./host_demo  /data/local/tmp
+adb shell 
+su root 
+cd /data/local/tmp 
+chmod 777 host_demo 
+./host_demo -h ##输出显示必须正常
 
 
 ##usb_upgrade
@@ -67,17 +94,17 @@ export NDK
 echo $NDK 
 $NDK/ndk-build.cmd
 
-NDK=/cygdrive/d/Android/Ndk/android-ndk-r16b
+#adb 验证  （拷贝test_usb_upgrade到桌面,桌面打开windows cmd,以管理员权限事先配置好无线调试环境（），因为要用USB接口（就一个） ） 
+adb devices 
+adb push ./test_usb_upgrade  /data/local/tmp
+#确认已经无线连接上手机，OK  (无线有点慢）
+adb devices 
+adb shell  （提示多个emulator ,拔掉USB线，重新adb connect 用五线方式连接上devices ）
+su root 
+cd /data/local/tmp 
+chmod 777 test_usb_upgrade 
+./test_usb_upgrade  -h    ##输出显示必须正常
 
-
-##host_demo 
-
-
-cd  capefw/trunk/host/demo/generic/jni
-NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
-export NDK 
-echo $NDK 
-$NDK/ndk-build.cmd
 
 
 
@@ -94,19 +121,20 @@ $NDK/ndk-build.cmd
  
 3.adb tcpip 5556
 
-#adb devices  
-#adb shell ifconfig  //查看手机无线ip ｗｌａｎ０　ｉｐ地址　（手机要打开ｗｉｆｉ脸上ｒｅａｌｔｅｋ）
+4 adb devices  
+5 adb shell ifconfig  //查看手机无线ip ｗｌａｎ０　ｉｐ地址　（手机要打开ｗｉｆｉ脸上ｒｅａｌｔｅｋ）
  
-4.adb connect 192.168.137.196:5556　　//根据实际ip地址adb 连上手机，提示connect之后，就可以独立USB线了。
+6.adb connect 192.168.137.57:5556　　//根据实际ip地址adb 连上手机，提示connect之后，就可以独立USB线了。
 
-5.adb shell ifconfig  //拔掉usb线后看看
+7.adb shell ifconfig  //拔掉usb线后看看, 如果没有，则连接一次（因为已经知道IP了） adb connect 192.168.137.57:5556
 
-6.adb shell  //进入shell 
+8.adb shell  //进入shell 
 
-7.su root  //切换为root 
+9.su root  //切换为root 
 
-8. cd /data/local/tmp    //程序放在这里执行 chmod 777  hello    --> ./hello 
+10. cd /data/local/tmp    //程序放在这里执行 chmod 777  hello    --> ./hello 
 
+11. ./hello
 #使用电脑端的KingRootSetup_3.4.0.1142.exe （安装后）破解测试手机testphone 05  android 6.01 获得root权限
 
 
@@ -134,11 +162,55 @@ cd /home/johl/exprj/prj_libusb/libusb/android/jni
 export   NDK=/cygdrive/c/cygwin/tmp/hdc_toolchains/android-ndk-r12b
 $NDK/ndk-build.cmd    #全部架构的so库编译以及一些testcase
 
+##test libusb (手机已经root) 参考libusb/android/README 
+
+adb shell su -c "mount -o remount,rw /system"
+adb push obj/local/armeabi/libusb1.0.so  /sdcard/johl/
+adb push obj/local/armeabi/listdevs /sdcard/johl/   #listdevs fxload xusb sam3u_benchmark hotplugtest stress
+adb push obj/local/armeabi/fxload /sdcard/johl/
+adb push obj/local/armeabi/xusb /sdcard/johl/
+adb push obj/local/armeabi/fxload /sdcard/johl/
+adb push obj/local/armeabi/sam3u_benchmark /sdcard/johl/
+adb push obj/local/armeabi/hotplugtest /sdcard/johl/
+adb push obj/local/armeabi/stress /sdcard/johl/
+
+adb shell 
+su root 
+cp  /sdcard/johl/libusb1.0.so  /system/lib 
+cp  /sdcard/johl/listdevs   /system/bin 
+
+
+chmod 0755  /system/bin/listdevs
+
+
+adb shell su -c "mount -o remount,ro /system"
 
 
 
 
 
+###adb commands
+
+adb  # show help for you 
+
+adb start-server
+adb kill-server
+adb devices
+adb get-state  #will see your Android state as “device”,
+adb get-serialno  #Get Device Serial Number
+adb push [source] [destination] #Copy Files from Computer to Phone
+adb pull [source] [destination] #Copy Files from Phone to Computer
+adb install "path/to/file.apk"  #Install/Uninstall Apps
+adb -s [serial-number] install "path/to/file.apk" #If you have multiple devices attached to your computer and only want to install the apk file on just one device then use the below command.
+adb uninstall <package-name>
+adb backup -all #Backup Android Device
+adb restore "path/to/backup.adb" # Restore Android Device To restore a backup, use the below command. Don’t forget to replace “path/to/backup.adb” with the actual file path.
+adb reboot-recovery
+adb reboot-bootloader #Reboot Android Device into Bootloader Mode ,The below command lets you boot into bootloader mode. Generally, the bootloader mode is very similar to the fastboot mode.
+adb fastboot  #The fastboot mode is generally used to flash custom ROMs, bootloader, and even kernels. Use the below command to boot into fastboot mode.
+adb shell  #This command starts the remote shell and lets you control and configure your device using the shell commands.
+adb shell screencap -p "/sdcard/screenshot.png" #Take Screenshots
+adb shell screenrecord "/path/to/record.mp4"  #Record Android Screen
 
 
 
