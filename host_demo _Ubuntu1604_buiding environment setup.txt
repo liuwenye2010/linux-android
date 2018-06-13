@@ -48,7 +48,7 @@ ln -s /home/johl/hdc_toolchains/ /tmp/
 
 
 (5)test your toolchains 
-cd /home/test/    # one example code  helloworld.c 
+cd /home/johl/test/    # one example code  helloworld.c 
 #1  (linux_armv7-a) 
 #  /home/johl/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-g++ helloworld.c -o helloworld
 /tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-g++ helloworld.c -o helloworld_arm_gnueabi 
@@ -65,18 +65,34 @@ file  helloworld_arm_androideabi
 #5   （android64_armv8-a）
 /tmp/hdc_toolchains/aarch64-linux-androideabi-4.9/bin/aarch64-linux-android-g++ helloworld.c -o helloworld_arm_aarch64_android
 file  helloworld_arm_aarch64_android
-
-
-
-
-
+#6   customer's building toolchain 
+cd /home/johl/test/
+/tmp/hdc_toolchains/stbgcc-4.8-1.6/bin/arm-linux-gcc  helloworld.c -o helloworld_stbgcc
+file  helloworld_stbgcc
+## apt-get install lib32stdc++6  if pop up the error s
 
 
 (6) compile the lib using our toolchian , below using linux_armv7-a  as example, using gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi
-#generate the libi2c_flash.bin 
+#generate the libi2c_flash.so  
 cd ~/capefw/trunk/host/demo/i2c_flash/libi2c_flash/
 sudo make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-
 ls custom/  
+
+(7) customer (broadcom)  ask generate  libi2c_flash.so 
+#And the command line they use:
+#arm-linux-gcc  -O2 -mapcs -mabi=aapcs-linux -march=armv7-a -mglibc -mfloat-abi=hard  \
+#  -fno-builtin-gettext -fno-builtin-printf -fno-builtin-index \
+#  -D__TRUE_GLIBC__ -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 \
+#  -D__USE_LARGEFILE64 -D__USE_FILE_OFFSET64 -D__USE_MISC   
+#
+cd /home/johl/capefw/trunk/host/demo/i2c_flash/libi2c_flash/
+make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/stbgcc-4.8-1.6/bin/arm-linux- EXTRA_CPPFLAGS="-O2 -mapcs -mabi=aapcs-linux -march=armv7-a -mglibc -mfloat-abi=hard  -fno-builtin-gettext -fno-builtin-printf -fno-builtin-index -D__TRUE_GLIBC__ -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64  -D__USE_LARGEFILE64 -D__USE_FILE_OFFSET64 -D__USE_MISC"   
+
+
+make VARIANT=custom CROSS_COMPILE=/tmp/hdc_toolchains/stbgcc-4.8-1.6/bin/arm-linux-  EXTRA_CxxxPPFLAGS="-O2 -mapcs -mabi=aapcs-linux -march=armv7-a -mglibc -mfloat-abi=hard -D__TRUE_GLIBC__ -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D__USE_LARGEFILE64 -D__USE_FILE_OFFSET64 -D__USE_MISC"
+
+
+
 
 #generate the libusb_upgrade for specific 
 cd ~/capefw/trunk/host/demo/usb_upgrade/libusb_upgrade/
@@ -307,7 +323,105 @@ $NDK/ndk-build    # 所有架构处理的libusb 以及test example 编译（）
 
 
 
+ ##编译cxAudioHidLib  
  
+cd  /home/johl/works/CxAudioHidLib-EMBCB/sampleCode
+gcc -I../ -I../Export -I../linux -I../Export/Common -lstdc++ -c SampleCode.cpp	
+gcc -o sampleCode  SampleCode.o -L../library -lCxAudioHidLib -lusb-1.0 -lstdc++
+#error   /library 
+
+
+
+
+
+#.tar.gz     格式解压命令为          tar   -zxvpf   xx.tar.gz
+#.tar.bz2   格式解压命令为          tar   -jxvpf    xx.tar.bz2 
+##gcc4.8  user compiler  
+cd  /home/johl/hdc_toolchains/   #目标目录
+tar -jxvpf   /home/johl/toolchains/stbgcc-4.8-1.6.tar.bz2
+#using a helloworld example to verify the customer's compiler toolchain  
+## apt-get install lib32stdc++6  if pop up the error : can't find the  
+cd  /home/johl/hdc_toolchains/stbgcc-4.8-1.6/bin/
+./arm-linux-gcc -v    # soft-link to arm-linux-gnueabihf-gcc - v 
+#gcc version 4.8.5 (Broadcom stbgcc-4.8-1.6)
+
+
+
+
+#host demo code refactor 
+
+###ubuntu16.04 environmet build 
+
+cd /home/johl/capefw/trunk3/host/demo/dsp_ctrl_status/ 
+
+#build all libs 
+make  buildlibs VARIANT=UB EXTRA_CPPFLAGS="-DENABLE_I2C_CONTROL=Y" 
+make  buildlibs VARIANT=UB EXTRA_CPPFLAGS="-DENABLE_USB_CONTROL=Y"
+
+#build I2C control host_demo 
+make  VARIANT=UB  EXTRA_CPPFLAGS="-DENABLE_I2C_CONTROL=Y"  
+#build USB control host_demo 
+make  VARIANT=UB  EXTRA_CPPFLAGS="-DENABLE_USB_CONTROL=Y"  
+
+
+
+
+###ubuntu16.04 environmet build libs  
+
+cd /home/johl/capefw/trunk3/host/api_src 
+
+#linux_armv7-a  -->pass 
+cd /home/johl/capefw/trunk3/host/api_src 
+make VARIANT=linux_armv7-a
+
+#linux64_armv8-a  -->pass 
+cd /home/johl/capefw/trunk3/host/api_src 
+make VARIANT=linux64_armv8-a
+
+#android_armv7-a -->pass 
+cd /home/johl/capefw/trunk3/host/api_src 
+make VARIANT=android_armv7-a
+
+#android64_armv8-a  -->pass 
+cd /home/johl/capefw/trunk3/host/api_src 
+make VARIANT=android64_armv8-a
+
+#linux_rpi  -->pass 
+cd /home/johl/capefw/trunk3/host/api_src 
+make VARIANT=linux_rpi
+
+#host/demo 
+cd /home/johl/capefw/trunk3/host/demo/dsp_ctrl_status/
+make  VARIANT=UB  EXTRA_CPPFLAGS="-DENABLE_USB_CONTROL=Y"  
+
+
+
+#host/demo 
+cd /home/johl/capefw/trunk3/host/demo/bg_upgrade/
+make  VARIANT=UB  EXTRA_CPPFLAGS="-DENABLE_USB_CONTROL=Y"  
+
+
+###cgywin environmen build  
+
+#linux_armv7-a  -->fail 
+cd capefw/trunk/host/api_src/
+make VARIANT=linux_armv7-a
+
+#linux64_armv8-a  -->fail
+cd capefw/trunk/host/api_src/
+make VARIANT=linux64_armv8-a
+
+#android_armv7-a  --> pass 
+cd capefw/trunk/host/api_src/
+make VARIANT=android_armv7-a
+
+#android64_armv8-a  -->pass 
+cd capefw/trunk/host/api_src/
+make VARIANT=android64_armv8-a
+
+#linux_rpi  -->fail
+cd capefw/trunk/host/api_src/
+make VARIANT=linux_rpi
 
 
 

@@ -1,0 +1,82 @@
+SDA
+SCL    GND (blcak) 
+       TXD (white) UART
+	   RXD (green) UART
+	   
+pi Net B port (ip net can different from laptop for Winscp) great！
+
+pi , raspberry 
+
+(Tested on Raspberry Pi with kernel 4.4.19)
+Host can connect to CX2092x from the linux based host via I2C using i2c-dev driver.
+To get I2S output from CX2092x to the host via I2S, one can integrate the ASoC 
+CX2092x kernel driver (this can be got from: https://github.com/Conexant-SW/CX2092X).
+The ASoC CX2092X driver utilizes libasound2-dev library (which can be installed 
+on the Raspberry Pi platform using:
+sudo apt-get install libasound2-dev
+
+And for USB control from the Linux Driver, the host demo code utilizes the
+libudev-dev and libusb-1.0 libraries (which for Raspbian can be installed using 
+sudo apt-get install libudev-dev
+sudo apt-get install libusb-1.0.0-dev)
+
+#sudo apt-get install libasound2-dev
+# sudo apt-get install libudev-dev
+# sudo apt-get install libusb-1.0.0-dev
+# sudo apt-get install g++
+# sudo apt-get install libusb-1.0
+
+#---------------------------------------------------------------------------#
+
+## test host/demo/bg_upgrade on raspberry pi 3 B (ben's)
+
+##### build libs one by one ###### 
+## build libi2c_interface.a 
+cd  ~/johl/host/api_src/interface_api/i2c_interface/i2c_dev
+make 
+ls  ~/johl/host/api/interface_api/i2c_interface/lib/linux_rpi  #libi2c_interface.a
+
+## build libusb_interface.a 
+cd  ~/johl/host/api_src/interface_api/usb_interface/libusb 
+make 
+ls  ~/johl/host/api/interface_api/usb_interface/lib/linux_rpi
+
+## build libsendcmd_i2c.a  
+cd  ~/johl/host/api_src/mid_level_api/sendcmd_i2c/
+make 
+ls  ~/johl/host/api/mid_level_api/sendcmd/linux_rpi/lib
+
+## build libsendcmd_usb.a  
+cd  ~/johl/host/api_src/mid_level_api/sendcmd_usb/
+make 
+ls  ~/johl/host/api/mid_level_api/sendcmd/linux_rpi/lib
+
+## build libbg_upgrade.a 
+
+cd  ~/johl/host/api_src/top_level_api/bg_upgrade/
+make 
+ls  ~/johl/host/api/top_level_api/bg_upgrade/linux_rpi/lib
+
+
+## build application bg_upgrade 
+cd  ~/johl/host/demo/bg_upgrade
+make  EXTRA_CPPFLAGS="-DENABLE_USB_CONTROL=Y"  
+
+
+make  EXTRA_CPPFLAGS="-DENABLE_I2C_CONTROL=Y"  
+
+
+
+## build application dsp_ctrl_status 
+cd  ~/johl/host/demo/dsp_ctrl_status
+make  EXTRA_CPPFLAGS="-DENABLE_USB_CONTROL=Y"  
+
+
+make  EXTRA_CPPFLAGS="-DENABLE_I2C_CONTROL=Y"  
+
+
+
+
+
+
+

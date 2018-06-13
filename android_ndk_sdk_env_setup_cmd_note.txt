@@ -105,7 +105,7 @@ cd /data/local/tmp
 chmod 777 test_usb_upgrade 
 ./test_usb_upgrade  -h    ##输出显示必须正常
 
-
+./test_usb_upgrade -v 0572 -p 149e  -s evk-wheeler2-adaptive_hybrid--39679-39712M.sfs
 
 
 
@@ -184,6 +184,8 @@ chmod 0755  /system/bin/listdevs
 
 
 adb shell su -c "mount -o remount,ro /system"
+
+
 
 
 
